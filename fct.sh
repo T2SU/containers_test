@@ -127,7 +127,7 @@ cmp_one () {
 	fi
 	same_bin=$(isEq $ft_ret $std_ret)
 
-	diff $std_log $ft_log 2>/dev/null 1>"$diff_file";
+	diff -U3 $std_log $ft_log 2>/dev/null 1>"$diff_file";
 	compare_output $diff_file
 	same_output=$?
 
