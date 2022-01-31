@@ -65,10 +65,15 @@ getYN () {
 	printf "${res}"
 }
 
+getTime() {
+	printf "${GREEN}$1${EOC}"
+}
+
 printRes () {
 	# 1=file 2=compile 3=bin 4=output 5=std_compile
-	printf "%-35s: COMPILE: %s | RET: %s | OUT: %s | STD: [%s]\n" \
-		"$1" "$(getEmoji $2)" "$(getEmoji $3)" "$(getEmoji $4)" "$(getYN $5)"
+	# 6=time data (raw)
+	printf "%-35s: COMPILE: %s | RET: %s | OUT: %s | STD: [%s] | TIME: %s\n" \
+		"$1" "$(getEmoji $2)" "$(getEmoji $3)" "$(getEmoji $4)" "$(getYN $5)" "$(getTime $6)"
 }
 
 # If diff_file empty, return 0 -> ok
@@ -113,6 +118,8 @@ cmp_one () {
 		rmdir $deepdir $logdir &>/dev/null
 	}
 
+	$CC $CFLAGS -o timeus.out srcs/time.cpp
+
 	compile "$1" "ft"  "$ft_bin"  /dev/null; ft_ret=$?
 	compile "$1" "std" "$std_bin" /dev/null; std_ret=$?
 	same_compilation=$(isEq $ft_ret $std_ret)
@@ -120,10 +127,14 @@ cmp_one () {
 
 	> $ft_log; > $std_log;
 	if [ $ft_ret -eq 0 ]; then
+		ft_time_start=`./timeus.out`
 		./$ft_bin &>$ft_log; ft_ret=$?
+		ft_time_end=`./timeus.out`
 	fi
 	if [ $std_ret -eq 0 ]; then
+		std_time_start=`./timeus.out`
 		./$std_bin &>$std_log; std_ret=$?
+		std_time_end=`./timeus.out`
 	fi
 	same_bin=$(isEq $ft_ret $std_ret)
 
@@ -131,7 +142,16 @@ cmp_one () {
 	compare_output $diff_file
 	same_output=$?
 
-	printRes "$container/$file" $same_compilation $same_bin $same_output $std_compile
+	time_ft=`bc <<< "scale=3; $((${ft_time_end}-${ft_time_start}))/1000"`
+	time_std=`bc <<< "scale=3; $((${std_time_end}-${std_time_start}))/1000"`
+	if [ $std_compile -eq 0 ]; then
+		time_res=`bc <<< "scale=2; ${time_ft}/${time_std}"`
+		time_mult=`printf "%0.2fx" ${time_res}`
+	else
+		time_mult="${time_ft}ms"
+	fi
+
+	printRes "$container/$file" $same_compilation $same_bin $same_output $std_compile $time_mult
 	clean_trailing_files
 }
 
