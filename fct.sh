@@ -65,11 +65,15 @@ getYN () {
 	printf "${res}"
 }
 
+getTime() {
+	printf "${GREEN}$1${EOC}"
+}
+
 printRes () {
 	# 1=file 2=compile 3=bin 4=output 5=std_compile
 	# 6=time data (raw)
-	printf "%-35s: COMPILE: %s | RET: %s | OUT: %s | STD: [%s] | TIME: ${GREEN}%s${EOC}\n" \
-		"$1" "$(getEmoji $2)" "$(getEmoji $3)" "$(getEmoji $4)" "$(getYN $5)" "$6"
+	printf "%-35s: COMPILE: %s | RET: %s | OUT: %s | STD: [%s] | TIME: %s\n" \
+		"$1" "$(getEmoji $2)" "$(getEmoji $3)" "$(getEmoji $4)" "$(getYN $5)" "$(getTime $6)"
 }
 
 # If diff_file empty, return 0 -> ok
@@ -140,14 +144,14 @@ cmp_one () {
 
 	time_ft=`bc <<< "scale=3; $((${ft_time_end}-${ft_time_start}))/1000"`
 	time_std=`bc <<< "scale=3; $((${std_time_end}-${std_time_start}))/1000"`
-
-	time_res_ft="[ft:${time_ft}ms]"
 	if [ $std_compile -eq 0 ]; then
-		time_res_std=" [std:${time_std}ms]"
+		time_res=`bc <<< "scale=2; ${time_ft}/${time_std}"`
+		time_mult=`printf "%0.2fx" ${time_res}`
+	else
+		time_mult="${time_ft}ms"
 	fi
-	time_res="${time_res_ft}${time_res_std}"
 
-	printRes "$container/$file" $same_compilation $same_bin $same_output $std_compile $time_res
+	printRes "$container/$file" $same_compilation $same_bin $same_output $std_compile $time_mult
 	clean_trailing_files
 }
 
