@@ -38,7 +38,7 @@ int		main(void)
 	cst(st1, st2); // 2
 	cst(st2, st1); // 3
 
-	swap(st1, st2);
+	std::swap(st1, st2);
 
 	cst(st1, st2); // 4
 	cst(st2, st1); // 5

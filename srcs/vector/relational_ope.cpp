@@ -31,7 +31,7 @@ int		main(void)
 	cmp(vct, vct2); // 4
 	cmp(vct2, vct); // 5
 
-	swap(vct, vct2);
+	std::swap(vct, vct2);
 
 	cmp(vct, vct2); // 6
 	cmp(vct2, vct); // 7
